@@ -21,6 +21,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Build;
 import android.support.v4.util.SparseArrayCompat;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
@@ -326,11 +327,13 @@ class Camera1 extends CameraViewImpl {
             mAspectRatio = chooseAspectRatio();
             sizes = mPreviewSizes.sizes(mAspectRatio);
         }
-        Size size = chooseOptimalSize(sizes);
+        //Size size = chooseOptimalSize(sizes);
+        Size size = new Size(960,720);
 
         // Always re-apply camera parameters
         // Largest picture size in this ratio
-        final Size pictureSize = mPictureSizes.sizes(mAspectRatio).last();
+        //final Size pictureSize = mPictureSizes.sizes(mAspectRatio).last();
+        final Size pictureSize = new Size(1280,960);
         if (mShowingPreview) {
             mCamera.stopPreview();
         }
@@ -340,6 +343,8 @@ class Camera1 extends CameraViewImpl {
         setAutoFocusInternal(mAutoFocus);
         setFlashInternal(mFlash);
         mCamera.setParameters(mCameraParameters);
+        Log.i("PreviewSize",mCamera.getParameters().getPreviewSize().width+","+mCamera.getParameters().getPreviewSize().height);
+        Log.i("PictureSize",mCamera.getParameters().getPictureSize().width+","+mCamera.getParameters().getPictureSize().height);
         if (mShowingPreview) {
             mCamera.startPreview();
         }
