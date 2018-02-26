@@ -18,12 +18,33 @@ package com.google.android.cameraview;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.cameraview.test.R;
+
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
 
 public class CameraViewActivity extends Activity {
 
     private CameraView mCameraView;
+
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    Log.i("", "OpenCV loaded successfully");
+                } break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +57,13 @@ public class CameraViewActivity extends Activity {
     protected void onResume() {
         super.onResume();
         mCameraView.start();
+        if (!OpenCVLoader.initDebug()) {
+            Log.d("", "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
+        } else {
+            Log.d("", "OpenCV library found inside package. Using it!");
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
     }
 
     @Override
