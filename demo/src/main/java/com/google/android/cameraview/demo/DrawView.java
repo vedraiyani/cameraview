@@ -26,6 +26,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 public class DrawView extends View {
@@ -54,22 +55,33 @@ public class DrawView extends View {
     @Override
     public void onDraw(Canvas canvas) {
 
+        final int viewHeight = getHeight();
+        final int viewWidth = getWidth();
+
+        final int displacementFromBorder = 10;
+        final int squareLength = Integer.valueOf(viewHeight/7);
+
+        Log.i("DrawView Height x Width", viewHeight + " x " + viewWidth);
+
         Rect rect = new Rect();
 
+        /**
+         * left side square are drawn first and then right side are drawn using offset to their respective left side square
+         */
         //top left
-        rect.set(10, 10, 130, 130);
+        rect.set(displacementFromBorder, displacementFromBorder, squareLength, squareLength);
         canvas.drawRect(rect, paint);
 
         //top right
-        rect.set(590, 10, 710, 130);
+        rect.offset(viewWidth-displacementFromBorder-squareLength, 0);
         canvas.drawRect(rect, paint);
 
         //bottom left
-        rect.set(10, 740, 130, 860);
+        rect.set(displacementFromBorder, viewHeight-squareLength, displacementFromBorder + squareLength, viewHeight);
         canvas.drawRect(rect, paint);
 
         //bottom right
-        rect.set(590, 740, 710, 860);
+        rect.offset(viewWidth-displacementFromBorder-squareLength, 0);
         canvas.drawRect(rect, paint);
     }
 }
