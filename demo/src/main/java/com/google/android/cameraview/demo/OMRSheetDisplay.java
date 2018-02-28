@@ -24,6 +24,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -54,7 +56,11 @@ public class OMRSheetDisplay extends AppCompatActivity {
 
         Utils.matToBitmap(matImage, bitmap);
         imageView = (ImageView) findViewById(R.id.imageViewOMRSheet);
-        imageView.setImageBitmap(bitmap);
+        GlideApp.with(OMRSheetDisplay.this)
+                .load(file.getPath())
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .into(imageView);
     }
 
     public Mat detectCircle(Mat mat){
