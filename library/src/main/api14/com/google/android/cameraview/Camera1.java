@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 @SuppressWarnings("deprecation")
-class Camera1 extends CameraViewImpl {
+class Camera1 extends CameraViewImpl implements Camera.PreviewCallback {
 
     private static final int INVALID_CAMERA_ID = -1;
 
@@ -72,8 +72,8 @@ class Camera1 extends CameraViewImpl {
 
     private int mDisplayOrientation;
 
-    Camera1(Callback callback, PreviewImpl preview) {
-        super(callback, preview);
+    Camera1(Callback callback, PreviewImpl preview, DrawCirclePreview drawCirclePreview) {
+        super(callback, preview, drawCirclePreview);
         preview.setCallback(new PreviewImpl.Callback() {
             @Override
             public void onSurfaceChanged() {
@@ -347,6 +347,7 @@ class Camera1 extends CameraViewImpl {
         Log.i("PictureSize",mCamera.getParameters().getPictureSize().width+","+mCamera.getParameters().getPictureSize().height);
         if (mShowingPreview) {
             mCamera.startPreview();
+            mCamera.setOneShotPreviewCallback(this);
         }
     }
 
@@ -482,4 +483,11 @@ class Camera1 extends CameraViewImpl {
         }
     }
 
+    @Override
+    public void onPreviewFrame(byte[] bytes, Camera camera) {
+        Log.i("Previewcallback", "Previewcallback");
+
+        DrawCircle dc = mDrawCirclePreview.getDrawCircle();
+        mCamera.setOneShotPreviewCallback(this);
+    }
 }

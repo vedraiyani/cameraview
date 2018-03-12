@@ -26,9 +26,12 @@ abstract class CameraViewImpl {
 
     protected final PreviewImpl mPreview;
 
-    CameraViewImpl(Callback callback, PreviewImpl preview) {
+    protected final DrawCirclePreview mDrawCirclePreview;
+
+    CameraViewImpl(Callback callback, PreviewImpl preview, DrawCirclePreview drawCirclePreview) {
         mCallback = callback;
         mPreview = preview;
+        mDrawCirclePreview = drawCirclePreview;
     }
 
     View getView() {

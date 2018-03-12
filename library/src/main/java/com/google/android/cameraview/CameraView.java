@@ -96,13 +96,14 @@ public class CameraView extends FrameLayout {
         }
         // Internal setup
         final PreviewImpl preview = createPreviewImpl(context);
+        final DrawCirclePreview drawCirclePreview = createDrawCirclePreview(context);
         mCallbacks = new CallbackBridge();
         if (Build.VERSION.SDK_INT < 21) {
-            mImpl = new Camera1(mCallbacks, preview);
+            mImpl = new Camera1(mCallbacks, preview, drawCirclePreview);
         } else if (Build.VERSION.SDK_INT < 23) {
-            mImpl = new Camera2(mCallbacks, preview, context);
+            mImpl = new Camera2(mCallbacks, preview, context, drawCirclePreview);
         } else {
-            mImpl = new Camera2Api23(mCallbacks, preview, context);
+            mImpl = new Camera2Api23(mCallbacks, preview, context, drawCirclePreview);
         }
         // Attributes
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CameraView, defStyleAttr,
@@ -136,6 +137,11 @@ public class CameraView extends FrameLayout {
             preview = new TextureViewPreview(context, this);
         }
         return preview;
+    }
+
+    @NonNull
+    private DrawCirclePreview createDrawCirclePreview(Context context){
+        return new DrawCirclePreview(context, this);
     }
 
     @Override
@@ -247,7 +253,7 @@ public class CameraView extends FrameLayout {
             //store the state ,and restore this state after fall back o Camera1
             Parcelable state=onSaveInstanceState();
             // Camera2 uses legacy hardware layer; fall back to Camera1
-            mImpl = new Camera1(mCallbacks, createPreviewImpl(getContext()));
+            mImpl = new Camera1(mCallbacks, createPreviewImpl(getContext()), createDrawCirclePreview(getContext()));
             onRestoreInstanceState(state);
             mImpl.start();
         }

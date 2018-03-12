@@ -20,4 +20,10 @@
         android:gravity="center"
         />
 
+    <com.google.android.cameraview.DrawCircle
+        android:id="@+id/viewDrawCircleSurface"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+
 </merge>
