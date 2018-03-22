@@ -25,16 +25,18 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 public class DrawCircle extends View {
     Paint paint = new Paint();
     int cx, cy;
     int radius;
+    Circle[] mCircles;
 
     private void init() {
-        paint.setColor(Color.RED);
-        paint.setAlpha(70);
+        paint.setColor(Color.YELLOW);
+        paint.setAlpha(80);
     }
 
     public DrawCircle(Context context) {
@@ -56,18 +58,22 @@ public class DrawCircle extends View {
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawCircle(cx, cy, radius, paint);
+        if(mCircles != null){
+            for (int i=0; i < mCircles.length; i++){
+                cx = (int) mCircles[i].getCx();
+                cy = (int) mCircles[i].getCy();
+                radius = mCircles[i].getRadius();
+                canvas.drawCircle(cx, cy, radius, paint);
+                Log.i("DrawCircle",cx+","+cy+","+radius);
+            }
+        }
     }
 
-    public void setCx(int cx) {
-        this.cx = cx;
+    public Circle[] getCircles() {
+        return mCircles;
     }
 
-    public void setCy(int cy) {
-        this.cy = cy;
-    }
-
-    public void setRadius(int radius) {
-        this.radius = radius;
+    public void setCircles(Circle[] circles) {
+        mCircles = circles;
     }
 }
