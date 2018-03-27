@@ -19,6 +19,7 @@ package com.google.android.cameraview;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
@@ -84,6 +85,8 @@ class Camera1 extends CameraViewImpl implements Camera.PreviewCallback {
     private int mFlash;
 
     private int mDisplayOrientation;
+
+    public boolean mProcessInProgress = false;
 
     Camera1(Callback callback, PreviewImpl preview, DrawCirclePreview drawCirclePreview) {
         super(callback, preview, drawCirclePreview);
@@ -340,17 +343,19 @@ class Camera1 extends CameraViewImpl implements Camera.PreviewCallback {
             mAspectRatio = chooseAspectRatio();
             sizes = mPreviewSizes.sizes(mAspectRatio);
         }
-        //Size size = chooseOptimalSize(sizes);
-        Size size = new Size(960, 720);
+        Size size = chooseOptimalSize(sizes);
+        //Size size = new Size(960, 720);
 
         // Always re-apply camera parameters
         // Largest picture size in this ratio
-        //final Size pictureSize = mPictureSizes.sizes(mAspectRatio).last();
-        final Size pictureSize = new Size(1280, 960);
+        final Size pictureSize = mPictureSizes.sizes(mAspectRatio).last();
+        //final Size pictureSize = new Size(1280, 960);
+        Log.i("pictureSize",pictureSize.getWidth()+","+pictureSize.getHeight());
         if (mShowingPreview) {
             mCamera.stopPreview();
         }
         mCameraParameters.setPreviewSize(size.getWidth(), size.getHeight());
+        Log.i("previewSize",size.getWidth()+","+size.getHeight());
         mCameraParameters.setPictureSize(pictureSize.getWidth(), pictureSize.getHeight());
         mCameraParameters.setRotation(calcCameraRotation(mDisplayOrientation));
         setAutoFocusInternal(mAutoFocus);
@@ -497,53 +502,69 @@ class Camera1 extends CameraViewImpl implements Camera.PreviewCallback {
     }
 
     @Override
-    public void onPreviewFrame(byte[] bytes, Camera camera) {
+    public void onPreviewFrame(byte[] data, Camera camera) {
         Log.i("Previewcallback", "Previewcallback");
-        int width = mCameraParameters.getPreviewSize().width;
-        int height = mCameraParameters.getPreviewSize().height;
-
-        YuvImage yuv = new YuvImage(bytes, mCameraParameters.getPreviewFormat(), width, height, null);
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        yuv.compressToJpeg(new Rect(0, 0, width, height), 50, out);
-
-        Bitmap bmp = BitmapFactory.decodeByteArray(out.toByteArray(), 0, out.size());
-
-        Mat mat = new Mat();
-        Core.transpose(mat, mat);
-        Core.flip(mat, mat, 1);
-
-        bmp = bmp.copy(Bitmap.Config.ARGB_8888, true);
-
-        Matrix matrix = new Matrix();
-        matrix.postRotate(90); // anti-clockwise by 90 degrees
-        Bitmap rotatedBitmap = Bitmap.createBitmap(bmp , 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
-        Utils.bitmapToMat(rotatedBitmap, mat);
-
-        Detection detection = new Detection();
-        circles = detection.detectCircle(mat, 20, 25);
-        if(circles != null){
-            DrawCircle dc = mDrawCirclePreview.getDrawCircle();
-            dc.setCircles(circles);
-            dc.invalidate();
-            this.takePicture();
-        }else{
-            mCamera.setOneShotPreviewCallback(Camera1.this);
+        if (mCameraParameters.getPreviewFormat() == ImageFormat.NV21){
+            Log.i("onPreviewFrame", "onPreviewFrame");
+            if(mProcessInProgress){
+                mCamera.addCallbackBuffer(data);
+            }
+            if (data == null){
+                return;
+            }
+            mProcessInProgress = true;
+            new ProcessPreviewDataTask().execute(data);
         }
+
     }
 
-/*
     private class ProcessPreviewDataTask extends AsyncTask<byte[], Void, Boolean> {
 
         @Override
         protected Boolean doInBackground(byte[]... data) {
+            Log.i("doInBackground", "doInBackground");
+
             byte bytes[] = data[0];
+            int width = mCameraParameters.getPreviewSize().width;
+            int height = mCameraParameters.getPreviewSize().height;
+
+            YuvImage yuv = new YuvImage(bytes, mCameraParameters.getPreviewFormat(), width, height, null);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            yuv.compressToJpeg(new Rect(0, 0, width, height), 50, out);
+
+            Bitmap bmp = BitmapFactory.decodeByteArray(out.toByteArray(), 0, out.size());
+
+            Mat mat = new Mat();
+            Core.transpose(mat, mat);
+            Core.flip(mat, mat, 1);
+
+            bmp = bmp.copy(Bitmap.Config.ARGB_8888, true);
+
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90); // anti-clockwise by 90 degrees
+            Bitmap rotatedBitmap = Bitmap.createBitmap(bmp , 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+            Utils.bitmapToMat(rotatedBitmap, mat);
+
+            Detection detection = new Detection();
+            circles = detection.detectCircle(mat, 25, 35);
+            Log.i("Done", "Done");
+            //mCamera.addCallbackBuffer(bytes);
+            mProcessInProgress = false;
             return true;
         }
 
         @Override
         protected void onPostExecute(Boolean result) {
+            if(circles != null){
+                DrawCircle dc = mDrawCirclePreview.getDrawCircle();
+                dc.setCircles(circles);
+                dc.invalidate();
+                Camera1.this.takePicture();
+            }else{
+                mCamera.setOneShotPreviewCallback(Camera1.this);
+            }
+            Log.i("onPostExecute", "onPostExecute");
         }
     }
-*/
 }

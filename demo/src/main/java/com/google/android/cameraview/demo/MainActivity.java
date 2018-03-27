@@ -45,6 +45,7 @@ import android.widget.Toast;
 
 import com.google.android.cameraview.AspectRatio;
 import com.google.android.cameraview.CameraView;
+import com.google.android.cameraview.Circle;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -94,6 +95,11 @@ public class MainActivity extends AppCompatActivity implements
     private CameraView mCameraView;
 
     private Handler mBackgroundHandler;
+
+    double first[] = new double[2];
+    double second[] = new double[2];
+    double third[] = new double[2];
+    double fourth[] = new double[2];
 
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
@@ -290,7 +296,13 @@ public class MainActivity extends AppCompatActivity implements
                         os = new FileOutputStream(file);
                         os.write(data);
                         os.close();
+                        Circle mCircles[] = mCameraView.getDrawCirclePreview().getDrawCircle().getCircles();
+                        getCircleCentersInOrder(mCircles);
                         Intent intent = new Intent(MainActivity.this, OMRSheetDisplay.class);
+                        intent.putExtra("first",first);
+                        intent.putExtra("second",second);
+                        intent.putExtra("third",third);
+                        intent.putExtra("fourth",fourth);
                         startActivity(intent);
                     } catch (IOException e) {
                         Log.w(TAG, "Cannot write to " + file, e);
@@ -308,6 +320,32 @@ public class MainActivity extends AppCompatActivity implements
         }
 
     };
+
+    private void getCircleCentersInOrder(Circle mCircles[]) {
+        double cx, cy;
+        for(int i=0; i< mCircles.length; i++){
+            cx = mCircles[i].getCx();
+            cy = mCircles[i].getCy();
+
+            if(cy <= 300){
+                if(cx <= 300){
+                    first[0] = cx;
+                    first[1] = cy;
+                }else{
+                    second[0] = cx;
+                    second[1] = cy;
+                }
+            }else{
+                if(cx <= 300){
+                    fourth[0] = cx;
+                    fourth[1] = cy;
+                }else{
+                    third[0] = cx;
+                    third[1] = cy;
+                }
+            }
+        }
+    }
 
     public static class ConfirmationDialogFragment extends DialogFragment {
 

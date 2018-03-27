@@ -48,7 +48,7 @@ public class Detection {
 
         //Detect circles
         //Imgproc.HoughCircles(matGray, circles, Imgproc.CV_HOUGH_GRADIENT, 1, 230, 50, 50, 15, 25);
-        Imgproc.HoughCircles(matGray, matCircles, Imgproc.CV_HOUGH_GRADIENT, 0.9, 100, 15, 30, radius1, radius2);
+        Imgproc.HoughCircles(matGray, matCircles, Imgproc.CV_HOUGH_GRADIENT, 0.9, 500, 15, 30, radius1, radius2);
 
         if(matCircles.cols() != 4)
             return null;
@@ -64,7 +64,7 @@ public class Detection {
             Point pt = new Point(Math.round(vCircle[0]), Math.round(vCircle[1]));
             int radius = (int) Math.round(vCircle[2]);
             circle[x] = new Circle(pt.x, pt.y, radius);
-            Log.i("Circle","Circle=" + pt.x + "," + pt.y + "," + radius + "," + matCircles.cols());
+            Log.i("Detection",pt.x+","+pt.y+","+radius);
         }
         return circle;
     }

@@ -78,6 +78,8 @@ public class CameraView extends FrameLayout {
 
     private final DisplayOrientationDetector mDisplayOrientationDetector;
 
+    private static DrawCirclePreview drawCirclePreview;
+
     public CameraView(Context context) {
         this(context, null);
     }
@@ -96,7 +98,7 @@ public class CameraView extends FrameLayout {
         }
         // Internal setup
         final PreviewImpl preview = createPreviewImpl(context);
-        final DrawCirclePreview drawCirclePreview = createDrawCirclePreview(context);
+        drawCirclePreview = createDrawCirclePreview(context);
         mCallbacks = new CallbackBridge();
         if (Build.VERSION.SDK_INT < 21) {
             mImpl = new Camera1(mCallbacks, preview, drawCirclePreview);
@@ -405,6 +407,9 @@ public class CameraView extends FrameLayout {
         return mImpl.getFlash();
     }
 
+    public DrawCirclePreview getDrawCirclePreview(){
+        return drawCirclePreview;
+    }
     /**
      * Take a picture. The result will be returned to
      * {@link Callback#onPictureTaken(CameraView, byte[])}.
